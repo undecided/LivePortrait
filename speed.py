@@ -18,13 +18,13 @@ def initialize_inputs(batch_size=1):
     """
     Generate random input tensors and move them to GPU
     """
-    feature_3d = torch.randn(batch_size, 32, 16, 64, 64).cuda().half()
-    kp_source = torch.randn(batch_size, 21, 3).cuda().half()
-    kp_driving = torch.randn(batch_size, 21, 3).cuda().half()
-    source_image = torch.randn(batch_size, 3, 256, 256).cuda().half()
-    generator_input = torch.randn(batch_size, 256, 64, 64).cuda().half()
-    eye_close_ratio = torch.randn(batch_size, 3).cuda().half()
-    lip_close_ratio = torch.randn(batch_size, 2).cuda().half()
+    feature_3d = torch.randn(batch_size, 32, 16, 64, 64).cpu().half()
+    kp_source = torch.randn(batch_size, 21, 3).cpu().half()
+    kp_driving = torch.randn(batch_size, 21, 3).cpu().half()
+    source_image = torch.randn(batch_size, 3, 256, 256).cpu().half()
+    generator_input = torch.randn(batch_size, 256, 64, 64).cpu().half()
+    eye_close_ratio = torch.randn(batch_size, 3).cpu().half()
+    lip_close_ratio = torch.randn(batch_size, 2).cpu().half()
     feat_stitching = concat_feat(kp_source, kp_driving).half()
     feat_eye = concat_feat(kp_source, eye_close_ratio).half()
     feat_lip = concat_feat(kp_source, lip_close_ratio).half()
@@ -105,34 +105,34 @@ def measure_inference_times(compiled_models, stitching_retargeting_module, input
 
     with torch.no_grad():
         for _ in range(100):
-            torch.cuda.synchronize()
+            torch.cpu.synchronize()
             overall_start = time.time()
 
             start = time.time()
             compiled_models['Appearance Feature Extractor'](inputs['source_image'])
-            torch.cuda.synchronize()
+            torch.cpu.synchronize()
             times['Appearance Feature Extractor'].append(time.time() - start)
 
             start = time.time()
             compiled_models['Motion Extractor'](inputs['source_image'])
-            torch.cuda.synchronize()
+            torch.cpu.synchronize()
             times['Motion Extractor'].append(time.time() - start)
 
             start = time.time()
             compiled_models['Warping Network'](inputs['feature_3d'], inputs['kp_driving'], inputs['kp_source'])
-            torch.cuda.synchronize()
+            torch.cpu.synchronize()
             times['Warping Network'].append(time.time() - start)
 
             start = time.time()
             compiled_models['SPADE Decoder'](inputs['generator_input'])  # Adjust input as required
-            torch.cuda.synchronize()
+            torch.cpu.synchronize()
             times['SPADE Decoder'].append(time.time() - start)
 
             start = time.time()
             stitching_retargeting_module['stitching'](inputs['feat_stitching'])
             stitching_retargeting_module['eye'](inputs['feat_eye'])
             stitching_retargeting_module['lip'](inputs['feat_lip'])
-            torch.cuda.synchronize()
+            torch.cpu.synchronize()
             times['Retargeting Models'].append(time.time() - start)
 
             overall_times.append(time.time() - overall_start)

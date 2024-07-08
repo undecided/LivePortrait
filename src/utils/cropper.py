@@ -44,7 +44,7 @@ class Cropper(object):
         self.face_analysis_wrapper = FaceAnalysisDIY(
             name='buffalo_l',
             root=make_abs_path('../../pretrained_weights/insightface'),
-            providers=["CUDAExecutionProvider"]
+            providers=["CPUExecutionProvider"]
         )
         self.face_analysis_wrapper.prepare(ctx_id=device_id, det_size=(512, 512))
         self.face_analysis_wrapper.warmup()

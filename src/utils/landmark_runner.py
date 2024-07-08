@@ -35,7 +35,7 @@ class LandmarkRunner(object):
         if onnx_provider.lower() == 'cuda':
             self.session = onnxruntime.InferenceSession(
                 ckpt_path, providers=[
-                    ('CUDAExecutionProvider', {'device_id': device_id})
+                    ('CPUExecutionProvider', {'device_id': device_id})
                 ]
             )
         else:

@@ -70,7 +70,7 @@ class LivePortraitWrapper(object):
             raise ValueError(f'img ndim should be 3 or 4: {x.ndim}')
         x = np.clip(x, 0, 1)  # clip to 0~1
         x = torch.from_numpy(x).permute(0, 3, 1, 2)  # 1xHxWx3 -> 1x3xHxW
-        x = x.cuda(self.device_id)
+        x = x.cpu()
         return x
 
     def prepare_driving_videos(self, imgs) -> torch.Tensor:
@@ -87,7 +87,7 @@ class LivePortraitWrapper(object):
         y = _imgs.astype(np.float32) / 255.
         y = np.clip(y, 0, 1)  # clip to 0~1
         y = torch.from_numpy(y).permute(0, 4, 3, 1, 2)  # TxHxWx3x1 -> Tx1x3xHxW
-        y = y.cuda(self.device_id)
+        y = y.cpu()
 
         return y
 
@@ -290,17 +290,17 @@ class LivePortraitWrapper(object):
 
     def calc_combined_eye_ratio(self, input_eye_ratio, source_lmk):
         eye_close_ratio = calc_eye_close_ratio(source_lmk[None])
-        eye_close_ratio_tensor = torch.from_numpy(eye_close_ratio).float().cuda(self.device_id)
-        input_eye_ratio_tensor = torch.Tensor([input_eye_ratio[0][0]]).reshape(1, 1).cuda(self.device_id)
+        eye_close_ratio_tensor = torch.from_numpy(eye_close_ratio).float().cpu()
+        input_eye_ratio_tensor = torch.Tensor([input_eye_ratio[0][0]]).reshape(1, 1).cpu()
         # [c_s,eyes, c_d,eyes,i]
         combined_eye_ratio_tensor = torch.cat([eye_close_ratio_tensor, input_eye_ratio_tensor], dim=1)
         return combined_eye_ratio_tensor
 
     def calc_combined_lip_ratio(self, input_lip_ratio, source_lmk):
         lip_close_ratio = calc_lip_close_ratio(source_lmk[None])
-        lip_close_ratio_tensor = torch.from_numpy(lip_close_ratio).float().cuda(self.device_id)
+        lip_close_ratio_tensor = torch.from_numpy(lip_close_ratio).float().cpu()
         # [c_s,lip, c_d,lip,i]
-        input_lip_ratio_tensor = torch.Tensor([input_lip_ratio[0]]).cuda(self.device_id)
+        input_lip_ratio_tensor = torch.Tensor([input_lip_ratio[0]]).cpu()
         if input_lip_ratio_tensor.shape != [1, 1]:
             input_lip_ratio_tensor = input_lip_ratio_tensor.reshape(1, 1)
         combined_lip_ratio_tensor = torch.cat([lip_close_ratio_tensor, input_lip_ratio_tensor], dim=1)
